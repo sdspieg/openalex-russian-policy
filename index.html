@@ -654,7 +654,7 @@
 </div>
 
 <div class="footer">
-    <p>Generated: 2026-03-09 19:12 |
+    <p>Generated: 2026-03-09 19:28 |
     Data Source: <a href="https://openalex.org" target="_blank" style="color: var(--accent);">OpenAlex API</a> (Cleaned) |
     <a href="https://rubase.org" target="_blank" style="color: var(--accent);">RuBase Workshop</a> -
     <a href="https://fletcher.tufts.edu" target="_blank" style="color: var(--accent);">Fletcher School</a> |
@@ -1269,8 +1269,7 @@ Plotly.newPlot('detailed-citations', [{
     ...layout,
     title: 'Detailed Citation Distribution',
     xaxis: { ...layout.xaxis, title: 'Number of Citations' },
-    yaxis: { ...layout.yaxis, title: 'Number of Papers', range: [0, Math.max(...citValues) * 1.2] },
-    margin: { t: 50, b: 50, l: 50, r: 50 },
+    yaxis: { ...layout.yaxis, title: 'Number of Papers' },
     annotations: [{
         xref: 'paper',
         yref: 'paper',
@@ -1306,8 +1305,7 @@ Plotly.newPlot('reference-dist', [{
     ...layout,
     title: 'Papers by Reference Count',
     xaxis: { ...layout.xaxis, title: 'Number of References' },
-    yaxis: { ...layout.yaxis, title: 'Number of Papers', range: [0, Math.max(...refDistData.map(([_, c]) => c)) * 1.2] },
-    margin: { t: 50, b: 50, l: 50, r: 50 }
+    yaxis: { ...layout.yaxis, title: 'Number of Papers' }
 }, config);
 } catch(e) {
     console.error('Error in reference-dist:', e);
