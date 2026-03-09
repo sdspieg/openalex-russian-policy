@@ -707,12 +707,28 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Color schemes
+// Tab20 colors - arranged to maximize distinction between adjacent colors
+const tab20 = [
+    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+    '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
+    '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5'
+];
+
+// Reorder tab20 to maximize contrast between adjacent items
+const tab20Distinct = [
+    tab20[0], tab20[5], tab20[2], tab20[7], tab20[4],  // Dark blue, brown, green, gray, purple
+    tab20[1], tab20[9], tab20[3], tab20[8], tab20[6],  // Orange, cyan, red, lime, pink
+    tab20[10], tab20[15], tab20[12], tab20[17], tab20[14], // Light blue, light brown, light green, light gray, light purple
+    tab20[11], tab20[19], tab20[13], tab20[18], tab20[16]  // Light orange, light cyan, light red, light lime, light pink
+];
+
 const colors = {
-    primary: ['#ef4444', '#f87171', '#fca5a5', '#fecaca', '#fee2e2'],
-    secondary: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'],
-    categorical: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'],
-    domains: ['#dc2626', '#ea580c', '#ca8a04', '#65a30d'],
-    gradient: ['#450a0a', '#7f1d1d', '#991b1b', '#b91c1c', '#dc2626', '#ef4444', '#f87171', '#fca5a5']
+    primary: tab20Distinct.slice(0, 5),
+    secondary: tab20Distinct.slice(5, 10),
+    categorical: tab20Distinct.slice(0, 8),
+    domains: tab20Distinct.slice(0, 4),
+    gradient: tab20Distinct
 };
 
 const layout = {
@@ -784,8 +800,8 @@ Plotly.newPlot('timeline', [{
     type: 'scatter',
     mode: 'lines+markers',
     fill: 'tozeroy',
-    line: { color: '#ef4444', width: 3 },
-    marker: { size: 6, color: '#ef4444' }
+    line: { color: tab20Distinct[0], width: 3 },
+    marker: { size: 6, color: tab20Distinct[0] }
 }], {
     ...layout,
     xaxis: { ...layout.xaxis, title: 'Year', tickangle: 0 },
@@ -811,7 +827,7 @@ Plotly.newPlot('fields-chart', [{
     y: fieldsData.map(d => d[0]),
     type: 'bar',
     orientation: 'h',
-    marker: { color: '#3b82f6' }
+    marker: { color: tab20Distinct[1] }
 }], {
     ...layout,
     xaxis: { ...layout.xaxis, title: 'Number of Papers' },
@@ -824,7 +840,7 @@ Plotly.newPlot('subfields-chart', [{
     x: subfieldsData.map(d => d[0]),
     y: subfieldsData.map(d => d[1]),
     type: 'bar',
-    marker: { color: colors.gradient }
+    marker: { color: tab20Distinct }
 }], {
     ...layout,
     yaxis: { ...layout.yaxis, title: 'Number of Papers' },
@@ -832,28 +848,32 @@ Plotly.newPlot('subfields-chart', [{
     margin: { ...layout.margin, b: 150 }
 }, config);
 
-// Topics chart
+// Topics chart - use distinct colors for each bar
 const topicsData = Object.entries(data.topics).slice(0, 10);
 Plotly.newPlot('topics-chart', [{
     x: topicsData.map(d => d[1]),
     y: topicsData.map(d => d[0]),
     type: 'bar',
     orientation: 'h',
-    marker: { color: '#10b981' }
+    marker: {
+        color: topicsData.map((_, i) => tab20Distinct[i % tab20Distinct.length])
+    }
 }], {
     ...layout,
     xaxis: { ...layout.xaxis, title: 'Number of Papers' },
     margin: { ...layout.margin, l: 200 }
 }, config);
 
-// Themes chart
+// Themes chart - use distinct colors for each bar
 const themesData = Object.entries(data.research_themes).slice(0, 10);
 Plotly.newPlot('themes-chart', [{
     x: themesData.map(d => d[1]),
     y: themesData.map(d => d[0]),
     type: 'bar',
     orientation: 'h',
-    marker: { color: '#ef4444' }
+    marker: {
+        color: themesData.map((_, i) => tab20Distinct[i % tab20Distinct.length])
+    }
 }], {
     ...layout,
     xaxis: { ...layout.xaxis, title: 'Number of Papers' },
@@ -866,7 +886,7 @@ Plotly.newPlot('countries-chart', [{
     x: countriesData.map(d => d[0]),
     y: countriesData.map(d => d[1]),
     type: 'bar',
-    marker: { color: '#8b5cf6' }
+    marker: { color: tab20Distinct[4] }
 }], {
     ...layout,
     yaxis: { ...layout.yaxis, title: 'Number of Papers' }
@@ -879,7 +899,7 @@ Plotly.newPlot('institutions-chart', [{
     y: instData.map(d => d[0]),
     type: 'bar',
     orientation: 'h',
-    marker: { color: '#f59e0b' }
+    marker: { color: tab20Distinct[5] }
 }], {
     ...layout,
     xaxis: { ...layout.xaxis, title: 'Number of Papers' },
@@ -892,7 +912,7 @@ Plotly.newPlot('sources-chart', [{
     x: sourcesData.map(d => d[0]),
     y: sourcesData.map(d => d[1]),
     type: 'bar',
-    marker: { color: '#ec4899' }
+    marker: { color: tab20Distinct[6] }
 }], {
     ...layout,
     yaxis: { ...layout.yaxis, title: 'Number of Papers' },
