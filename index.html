@@ -654,7 +654,7 @@
 </div>
 
 <div class="footer">
-    <p>Generated: 2026-03-09 18:56 |
+    <p>Generated: 2026-03-09 19:04 |
     Data Source: <a href="https://openalex.org" target="_blank" style="color: var(--accent);">OpenAlex API</a> (Cleaned) |
     <a href="https://rubase.org" target="_blank" style="color: var(--accent);">RuBase Workshop</a> -
     <a href="https://fletcher.tufts.edu" target="_blank" style="color: var(--accent);">Fletcher School</a> |
@@ -1172,12 +1172,17 @@ chartData['sources-chart'] = [sourcesChart, sourcesLayout];
 Plotly.newPlot('sources-chart', [sourcesChart], sourcesLayout, config);
 
 // Research Metrics Visualizations
-console.log('Starting Research Metrics visualizations');
-console.log('authorship_distribution:', data.authorship_distribution);
 
-// 1. Authorship Distribution - Horizontal stacked bar (like slide 10)
+// 1. Authorship Distribution
+if (document.getElementById('authorship-dist')) {
 try {
-const authorshipData = Object.entries(data.authorship_distribution || {});
+const authorshipData = Object.entries(data.authorship_distribution || {})
+    .sort(([a], [b]) => {
+        // Sort numerically, with special cases at end
+        const numA = parseInt(a) || 999;
+        const numB = parseInt(b) || 999;
+        return numA - numB;
+    });
 const totalAuthPapers = Object.values(data.authorship_distribution || {}).reduce((a,b) => a+b, 0);
 const authorshipLabels = [];
 const authorshipValues = [];
@@ -1192,48 +1197,41 @@ authorshipData.forEach(([authors, count]) => {
                   authors === '6-10' ? '6-10 authors' : '11+ authors';
     authorshipLabels.push(label);
     authorshipValues.push(count);
-    authorshipPercentages.push((count / totalAuthPapers * 100).toFixed(1) + '%');
+    authorshipPercentages.push(count);
 });
 
-if (document.getElementById('authorship-dist')) {
 Plotly.newPlot('authorship-dist', [{
     type: 'bar',
     orientation: 'h',
-    y: authorshipLabels.reverse(),
-    x: authorshipValues.reverse(),
-    text: authorshipPercentages.reverse(),
-    textposition: 'auto',
+    y: authorshipLabels,
+    x: authorshipValues,
+    text: authorshipValues.map((v, i) => `${v} (${(v/totalAuthPapers*100).toFixed(1)}%)`),
+    textposition: 'outside',
     marker: {
-        color: authorshipLabels.map((label, i) =>
+        color: authorshipLabels.map(label =>
             label.includes('1 author') ? '#ef4444' : '#38bdf8'
         )
     }
 }], {
     ...layout,
-    title: 'Papers by Number of Co-Authors',
+    title: 'Papers by Number of Authors',
     xaxis: { ...layout.xaxis, title: 'Number of Papers' },
-    yaxis: { ...layout.yaxis, title: null },
-    annotations: [{
-        xref: 'paper',
-        yref: 'paper',
-        x: 0.95,
-        y: 0.95,
-        text: `N = ${totalAuthPapers}`,
-        showarrow: false,
-        bgcolor: 'rgba(30, 41, 59, 0.95)',
-        bordercolor: '#38bdf8',
-        borderwidth: 1,
-        font: { color: '#38bdf8', size: 12 }
-    }]
+    yaxis: {
+        ...layout.yaxis,
+        title: null,
+        autorange: 'reversed',
+        dtick: 1
+    },
+    margin: { l: 100, r: 50, t: 50, b: 50 }
 }, config);
-}
 } catch(e) {
     console.error('Error in authorship-dist:', e);
 }
+}
 
 // 2. Detailed Citation Distribution
-try {
 if (document.getElementById('detailed-citations')) {
+try {
 const detailedCitData = Object.entries(data.detailed_citation_distribution || {});
 const citLabels = detailedCitData.map(([range, _]) =>
     range === '0' ? 'Zero' :
@@ -1245,6 +1243,7 @@ const citLabels = detailedCitData.map(([range, _]) =>
     range + ' citations'
 );
 const citValues = detailedCitData.map(([_, count]) => count);
+const totalPapers = data.stats.total_papers;
 
 Plotly.newPlot('detailed-citations', [{
     type: 'bar',
@@ -1260,11 +1259,12 @@ Plotly.newPlot('detailed-citations', [{
             range === '5' ? '#10b981' : '#38bdf8'
         )
     },
-    text: citValues.map(v => v + ' papers'),
-    textposition: 'outside'
+    text: citValues.map(v => `${v} papers`),
+    textposition: 'outside',
+    hovertemplate: '%{x}: %{y} papers<extra></extra>'
 }], {
     ...layout,
-    title: 'Papers by Citation Count',
+    title: 'Detailed Citation Distribution',
     xaxis: { ...layout.xaxis, title: 'Number of Citations' },
     yaxis: { ...layout.yaxis, title: 'Number of Papers' },
     annotations: [{
@@ -1272,7 +1272,7 @@ Plotly.newPlot('detailed-citations', [{
         yref: 'paper',
         x: 0.95,
         y: 0.95,
-        text: `Zero: ${((citValues[0] / totalAuthPapers) * 100).toFixed(1)}% of papers`,
+        text: `${((citValues[0] / totalPapers) * 100).toFixed(1)}% have zero citations`,
         showarrow: false,
         bgcolor: 'rgba(30, 41, 59, 0.95)',
         bordercolor: '#ef4444',
@@ -1280,53 +1280,54 @@ Plotly.newPlot('detailed-citations', [{
         font: { color: '#ef4444', size: 12 }
     }]
 }, config);
-}
 } catch(e) {
     console.error('Error in detailed-citations:', e);
 }
+}
 
 // 3. Reference Distribution
-try {
 if (document.getElementById('reference-dist')) {
+try {
 const refDistData = Object.entries(data.outward_citation_distribution || {});
 Plotly.newPlot('reference-dist', [{
     type: 'bar',
     x: refDistData.map(([range, _]) => range + ' refs'),
     y: refDistData.map(([_, count]) => count),
     marker: { color: '#f59e0b' },
-    text: refDistData.map(([_, count]) => count + ' papers'),
-    textposition: 'outside'
+    text: refDistData.map(([_, count]) => `${count} papers`),
+    textposition: 'outside',
+    hovertemplate: '%{x}: %{y} papers<extra></extra>'
 }], {
     ...layout,
     title: 'Papers by Reference Count',
     xaxis: { ...layout.xaxis, title: 'Number of References' },
     yaxis: { ...layout.yaxis, title: 'Number of Papers' }
 }, config);
-}
 } catch(e) {
     console.error('Error in reference-dist:', e);
 }
+}
 
 // 4. Citation Percentiles
-try {
 if (document.getElementById('citation-percentiles')) {
+try {
 const detailedCitData2 = Object.entries(data.detailed_citation_distribution || {});
 const citLabels2 = detailedCitData2.map(([range, _]) =>
-    range === '0' ? 'Zero' :
-    range === '1' ? 'One' :
-    range === '2' ? 'Two' :
-    range === '3' ? 'Three' :
-    range === '4' ? 'Four' :
-    range === '5' ? 'Five' :
-    range + ' citations'
+    range === '0' ? '0' :
+    range === '1' ? '1' :
+    range === '2' ? '2' :
+    range === '3' ? '3' :
+    range === '4' ? '4' :
+    range === '5' ? '5' :
+    range
 );
 const citValues2 = detailedCitData2.map(([_, count]) => count);
-const totalPapers2 = Object.values(data.authorship_distribution || {}).reduce((a,b) => a+b, 0) || data.stats.total_papers;
+const totalPapers2 = data.stats.total_papers;
 const cumulative = [];
 let runningTotal = 0;
-for (let i = 0; i < citLabels2.length; i++) {
+for (let i = 0; i < citValues2.length; i++) {
     runningTotal += citValues2[i];
-    cumulative.push(((runningTotal / totalPapers2) * 100).toFixed(1));
+    cumulative.push(parseFloat(((runningTotal / totalPapers2) * 100).toFixed(1)));
 }
 
 Plotly.newPlot('citation-percentiles', [{
@@ -1337,25 +1338,33 @@ Plotly.newPlot('citation-percentiles', [{
     line: { color: '#10b981', width: 3 },
     marker: { size: 8, color: '#10b981' },
     fill: 'tozeroy',
-    fillcolor: 'rgba(16, 185, 129, 0.1)'
+    fillcolor: 'rgba(16, 185, 129, 0.1)',
+    hovertemplate: '≤%{x} citations: %{y}% of papers<extra></extra>'
 }], {
     ...layout,
     title: 'Cumulative Citation Distribution',
-    xaxis: { ...layout.xaxis, title: 'Citation Threshold' },
-    yaxis: { ...layout.yaxis, title: '% of Papers with ≤ X Citations', range: [0, 100] },
-    annotations: [{
+    xaxis: {
+        ...layout.xaxis,
+        title: 'Maximum Citations',
+        tickmode: 'array',
+        tickvals: citLabels2,
+        ticktext: citLabels2.map(l => l === '0' ? 'Zero' : l === '1' ? 'One' : l === '2' ? 'Two' : l)
+    },
+    yaxis: { ...layout.yaxis, title: '% of Papers', range: [0, 105] },
+    annotations: cumulative[1] ? [{
         x: citLabels2[1],
         y: cumulative[1],
         text: `${cumulative[1]}% have ≤1 citation`,
         showarrow: true,
         arrowhead: 2,
         ax: 50,
-        ay: -30
-    }]
+        ay: -30,
+        font: { color: '#10b981', size: 12 }
+    }] : []
 }, config);
-}
 } catch(e) {
     console.error('Error in citation-percentiles:', e);
+}
 }
 
 </script>
