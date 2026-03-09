@@ -654,7 +654,7 @@
 </div>
 
 <div class="footer">
-    <p>Generated: 2026-03-09 19:04 |
+    <p>Generated: 2026-03-09 19:12 |
     Data Source: <a href="https://openalex.org" target="_blank" style="color: var(--accent);">OpenAlex API</a> (Cleaned) |
     <a href="https://rubase.org" target="_blank" style="color: var(--accent);">RuBase Workshop</a> -
     <a href="https://fletcher.tufts.edu" target="_blank" style="color: var(--accent);">Fletcher School</a> |
@@ -1233,6 +1233,7 @@ Plotly.newPlot('authorship-dist', [{
 if (document.getElementById('detailed-citations')) {
 try {
 const detailedCitData = Object.entries(data.detailed_citation_distribution || {});
+console.log('Detailed citation data:', detailedCitData);
 const citLabels = detailedCitData.map(([range, _]) =>
     range === '0' ? 'Zero' :
     range === '1' ? 'One' :
@@ -1244,6 +1245,8 @@ const citLabels = detailedCitData.map(([range, _]) =>
 );
 const citValues = detailedCitData.map(([_, count]) => count);
 const totalPapers = data.stats.total_papers;
+console.log('Citation labels:', citLabels);
+console.log('Citation values:', citValues);
 
 Plotly.newPlot('detailed-citations', [{
     type: 'bar',
@@ -1259,14 +1262,15 @@ Plotly.newPlot('detailed-citations', [{
             range === '5' ? '#10b981' : '#38bdf8'
         )
     },
-    text: citValues.map(v => `${v} papers`),
-    textposition: 'outside',
+    text: citValues.map(v => `${v}`),
+    textposition: 'auto',
     hovertemplate: '%{x}: %{y} papers<extra></extra>'
 }], {
     ...layout,
     title: 'Detailed Citation Distribution',
     xaxis: { ...layout.xaxis, title: 'Number of Citations' },
-    yaxis: { ...layout.yaxis, title: 'Number of Papers' },
+    yaxis: { ...layout.yaxis, title: 'Number of Papers', range: [0, Math.max(...citValues) * 1.2] },
+    margin: { t: 50, b: 50, l: 50, r: 50 },
     annotations: [{
         xref: 'paper',
         yref: 'paper',
@@ -1289,19 +1293,21 @@ Plotly.newPlot('detailed-citations', [{
 if (document.getElementById('reference-dist')) {
 try {
 const refDistData = Object.entries(data.outward_citation_distribution || {});
+console.log('Reference distribution data:', refDistData);
 Plotly.newPlot('reference-dist', [{
     type: 'bar',
     x: refDistData.map(([range, _]) => range + ' refs'),
     y: refDistData.map(([_, count]) => count),
     marker: { color: '#f59e0b' },
-    text: refDistData.map(([_, count]) => `${count} papers`),
-    textposition: 'outside',
+    text: refDistData.map(([_, count]) => `${count}`),
+    textposition: 'auto',
     hovertemplate: '%{x}: %{y} papers<extra></extra>'
 }], {
     ...layout,
     title: 'Papers by Reference Count',
     xaxis: { ...layout.xaxis, title: 'Number of References' },
-    yaxis: { ...layout.yaxis, title: 'Number of Papers' }
+    yaxis: { ...layout.yaxis, title: 'Number of Papers', range: [0, Math.max(...refDistData.map(([_, c]) => c)) * 1.2] },
+    margin: { t: 50, b: 50, l: 50, r: 50 }
 }, config);
 } catch(e) {
     console.error('Error in reference-dist:', e);
