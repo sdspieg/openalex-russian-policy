@@ -1129,7 +1129,7 @@ const countriesLayout = {
     ...layout,
     title: 'Top Countries',
     yaxis: { ...layout.yaxis, title: 'Papers' },
-    xaxis: { ...layout.xaxis, tickangle: -45 },
+    xaxis: { ...layout.xaxis, tickangle: -45, type: 'category' },
     margin: { ...layout.margin, b: 100 }
 };
 chartData['countries-chart'] = [countriesChart, countriesLayout];
@@ -1268,7 +1268,7 @@ Plotly.newPlot('detailed-citations', [{
 }], {
     ...layout,
     title: 'Detailed Citation Distribution',
-    xaxis: { ...layout.xaxis, title: 'Number of Citations' },
+    xaxis: { ...layout.xaxis, title: 'Number of Citations', type: 'category' },
     yaxis: { ...layout.yaxis, title: 'Number of Papers' },
     annotations: [{
         xref: 'paper',
@@ -1304,7 +1304,7 @@ Plotly.newPlot('reference-dist', [{
 }], {
     ...layout,
     title: 'Papers by Reference Count',
-    xaxis: { ...layout.xaxis, title: 'Number of References' },
+    xaxis: { ...layout.xaxis, title: 'Number of References', type: 'category' },
     yaxis: { ...layout.yaxis, title: 'Number of Papers' }
 }, config);
 } catch(e) {
